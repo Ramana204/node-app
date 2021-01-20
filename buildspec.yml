@@ -7,22 +7,21 @@ phases:
       - echo Logging in to Amazon ECR...
       - aws --version
       - $(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email)
-      - REPOSITORY_URI=996197926101.dkr.ecr.ap-south-1.amazonaws.com/test
       - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - IMAGE_TAG=build-$(echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2}')
   build:
     commands:
       - echo Build started on `date`
       - echo Building the Docker image...
-      - docker build -t $REPOSITORY_URI:latest .
-      - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
+      - docker build -t $REPOSITORY_URI:$IMAGE_TAG .
+      - docker tag  $REPOSITORY_URI:$IMAGE_TAG
   post_build:
     commands:
       - echo Pushing the Docker images...
       - docker push $REPOSITORY_URI:latest
       - docker push $REPOSITORY_URI:$IMAGE_TAG
       - echo Writing image definitions file...
-      - printf '[{"name":"nodeapp-container","imageUri":"996197926101.dkr.ecr.ap-south-1.amazonaws.com/test:build-be20ef17-870a-4ee6-b259-fe0d576633d0"}]' > imagedefinitions.json
+      - printf '[{"name":"nodeapp-container","996197926101.dkr.ecr.us-east-2.amazonaws.com/nodeapp:$IMAGE_TAG"}]' > imagedefinitions.json
       - cat imagedefinitions.json 
 artifacts:
     files: imagedefinitions.json
